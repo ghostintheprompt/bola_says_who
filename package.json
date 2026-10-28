@@ -1,0 +1,12 @@
+{
+  "name": "data-driven-authz-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reproducible lab for data-driven / client-trusted authorization bypass classes, modeled on a confirmed account-state finding observed in the field.",
+  "scripts": {
+    "test": "node cases/01-empty-200-as-disabled/test.js && node cases/02-client-trusted-role/test.js && node cases/03-blind-probe/test.js && node cases/04-ssr-state-exposure/test.js && node cases/05-idor-cross-user/test.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
