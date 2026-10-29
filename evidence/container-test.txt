@@ -1,5 +1,5 @@
- Container data_driven_authz_lab-lab-run-8025bda23762 Creating 
- Container data_driven_authz_lab-lab-run-8025bda23762 Created 
+ Container data_driven_authz_lab-lab-run-f5d0b222fba7 Creating 
+ Container data_driven_authz_lab-lab-run-f5d0b222fba7 Created 
 
 > data-driven-authz-lab@1.0.0 test
 > node cases/01-empty-200-as-disabled/test.js && node cases/02-client-trusted-role/test.js && node cases/03-blind-probe/test.js && node cases/04-ssr-state-exposure/test.js && node cases/05-idor-cross-user/test.js && node tests/boundaries.js
@@ -24,14 +24,14 @@
   PASS  fixed: student asserting x-role=fellow is kept on the student dashboard
 
 5 passed, 0 failed
-  round 1: client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND
-  round 2: client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
-  round 3: client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND
-  round 4: empty-state/fixed->SOUND, client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE
-  round 5: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
-  round 6: client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE
-  round 7: empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE
-  round 8: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE
+  round 1: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
+  round 2: client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/fixed->SOUND
+  round 3: client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE
+  round 4: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND
+  round 5: empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND
+  round 6: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
+  round 7: client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE
+  round 8: empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE
 
   blind classification: 32/32 correct across 8 randomized rounds
   PASS  probe classifies every shuffled target correctly, label withheld

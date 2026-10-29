@@ -22,24 +22,24 @@
   PASS  fixed: student asserting x-role=fellow is kept on the student dashboard
 
 5 passed, 0 failed
-  round 1: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE
-  round 2: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND
-  round 3: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
-  round 4: client-role/fixed->SOUND, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE
-  round 5: client-role/fixed->SOUND, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE
-  round 6: client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND
-  round 7: client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND
-  round 8: client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
+  round 1: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
+  round 2: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
+  round 3: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
+  round 4: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE
+  round 5: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/fixed->SOUND
+  round 6: client-role/fixed->SOUND, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE
+  round 7: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE
+  round 8: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
 
   blind classification: 32/32 correct across 8 randomized rounds
   PASS  probe classifies every shuffled target correctly, label withheld
 == vulnerable server ==
   PASS  functionality: active account hydrates to DASHBOARD
-  PASS  vulnerability (CWE-200): disabled page exposes isActive flag, profileId, and protected scene
+  PASS  observation: disabled page includes its own state and scene metadata
   PASS  vulnerability: flipping isActive in transit flips disabled account to DASHBOARD
 == fixed server ==
   PASS  functionality: active account still hydrates to DASHBOARD
-  PASS  fixed (CWE-200 closed): disabled page ships no flag, no profileId, no protected scene
+  PASS  metadata minimization: disabled page omits state and scene identifiers
   PASS  fixed: injection attempt is inert, view stays ACCOUNT_DISABLED
 
 6 passed, 0 failed
