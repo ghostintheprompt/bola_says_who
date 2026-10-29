@@ -11,12 +11,12 @@ function freshState() {
     active: { username: 'active', password: 'pw-act-1', id: 'u_active', profileId: 'prof_active_8842', status: 'active' },
     disabled: { username: 'disabled', password: 'pw-dis-1', id: 'u_disabled', profileId: 'prof_disabled_1077', status: 'disabled' },
   };
-  const sessions = {}; // token -> userId
+  const sessions = Object.create(null); // token -> userId
   return { users, sessions };
 }
 
 function login(state, username, password) {
-  const user = state.users[username];
+  const user = typeof username === 'string' && Object.hasOwn(state.users, username) ? state.users[username] : null;
   if (!user || user.password !== password) return null;
   const token = crypto.randomBytes(16).toString('hex');
   state.sessions[token] = user.id;

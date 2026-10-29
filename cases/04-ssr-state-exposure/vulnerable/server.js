@@ -1,11 +1,7 @@
-// VULNERABLE: /app ships the same hydrate-from-state shell to every
-// authenticated user. The initial-state blob embeds, in plaintext:
-//   - the authorization decision itself (isActive)
-//   - the account's profileId (an identifier useful for pivoting elsewhere)
-//   - the protected scene name, whose code path is referenced for all users
-// Two defects in one response: sensitive authorization state is exposed to the
-// client (CWE-200), and because the client decides from the isActive flag, an
-// edit to that flag in transit flips a disabled account to the dashboard.
+// The page exposes its own account state and a scene name. Editing the flag
+// changes the local hydration result. Those fields alone are not proof of a
+// sensitive disclosure. The separate protected-resource route deliberately
+// omits status enforcement so an actual unauthorized data read is measurable.
 
 const express = require('express');
 const { freshState, login, requireAuth } = require('../seed');
@@ -40,6 +36,12 @@ function createApp() {
 
   app.get('/app', requireAuth(state), (req, res) => {
     res.type('html').send(page(req.user));
+  });
+
+
+  // Synthetic protected resource: UI edits confer no authority here.
+  app.get('/api/restricted-brief', requireAuth(state), (req, res) => {
+    res.json({ brief: 'FIXTURE-RESTRICTED-BRIEF', owner: req.user.id });
   });
 
   return { app, state };

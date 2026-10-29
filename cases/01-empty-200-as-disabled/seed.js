@@ -23,12 +23,12 @@ function freshState() {
     u_dis: [{ id: 'p9', title: 'Should never ship to client', status: 'open' }],
   };
 
-  const sessions = {}; // token -> userId
+  const sessions = Object.create(null); // token -> userId
   return { users, projects, sessions };
 }
 
 function login(state, username, password) {
-  const user = state.users[username];
+  const user = typeof username === 'string' && Object.hasOwn(state.users, username) ? state.users[username] : null;
   if (!user || user.password !== password) return null;
   const token = crypto.randomBytes(16).toString('hex');
   state.sessions[token] = user.id;

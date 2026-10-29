@@ -1,0 +1,93 @@
+
+> data-driven-authz-lab@1.0.0 test
+> node cases/01-empty-200-as-disabled/test.js && node cases/02-client-trusted-role/test.js && node cases/03-blind-probe/test.js && node cases/04-ssr-state-exposure/test.js && node cases/05-idor-cross-user/test.js && node tests/boundaries.js
+
+== vulnerable server ==
+  PASS  functionality: active account with projects renders dashboard
+  PASS  vulnerability: disabled and active-empty responses are indistinguishable
+  PASS  vulnerability: injected payload flips disabled account to DASHBOARD
+== fixed server ==
+  PASS  functionality: active account with projects still renders dashboard
+  PASS  functionality: active-empty account is NOT treated as disabled
+  PASS  fixed: disabled account gets an explicit 403 decision, no projects served
+  PASS  fixed: injected projects on a 403 do not unlock the dashboard
+
+7 passed, 0 failed
+== vulnerable server ==
+  PASS  functionality: real fellow gets the fellow dashboard
+  PASS  baseline: student session alone gets the student dashboard
+  PASS  vulnerability: student asserting x-role=fellow gets the FELLOW dashboard
+== fixed server ==
+  PASS  functionality: real fellow still gets the fellow dashboard
+  PASS  fixed: student asserting x-role=fellow is kept on the student dashboard
+
+5 passed, 0 failed
+  round 1: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE
+  round 2: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND
+  round 3: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
+  round 4: client-role/fixed->SOUND, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE
+  round 5: client-role/fixed->SOUND, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE
+  round 6: client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND
+  round 7: client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/fixed->SOUND
+  round 8: client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
+
+  blind classification: 32/32 correct across 8 randomized rounds
+  PASS  probe classifies every shuffled target correctly, label withheld
+== vulnerable server ==
+  PASS  functionality: active account hydrates to DASHBOARD
+  PASS  vulnerability (CWE-200): disabled page exposes isActive flag, profileId, and protected scene
+  PASS  vulnerability: flipping isActive in transit flips disabled account to DASHBOARD
+== fixed server ==
+  PASS  functionality: active account still hydrates to DASHBOARD
+  PASS  fixed (CWE-200 closed): disabled page ships no flag, no profileId, no protected scene
+  PASS  fixed: injection attempt is inert, view stays ACCOUNT_DISABLED
+
+6 passed, 0 failed
+== vulnerable server ==
+  PASS  functionality: alice reads her own profile
+  PASS  vulnerability: alice CAN read bob's profile by profileId (IDOR confirmed)
+== fixed server ==
+  PASS  functionality: alice still reads her own profile
+  PASS  fixed: alice can no longer read bob's profile
+
+4 passed, 0 failed
+PASS 01-empty-200-as-disabled/vulnerable: active control retrieves protected fixture
+PASS 01-empty-200-as-disabled/vulnerable: disabled session resource boundary
+PASS 01-empty-200-as-disabled/vulnerable: missing session denied
+PASS 01-empty-200-as-disabled/vulnerable: inherited-property token denied
+PASS 01-empty-200-as-disabled/vulnerable: live status revocation
+PASS 01-empty-200-as-disabled/fixed: active control retrieves protected fixture
+PASS 01-empty-200-as-disabled/fixed: disabled session resource boundary
+PASS 01-empty-200-as-disabled/fixed: missing session denied
+PASS 01-empty-200-as-disabled/fixed: inherited-property token denied
+PASS 01-empty-200-as-disabled/fixed: live status revocation
+PASS 04-ssr-state-exposure/vulnerable: active control retrieves protected fixture
+PASS 04-ssr-state-exposure/vulnerable: disabled session resource boundary
+PASS 04-ssr-state-exposure/vulnerable: missing session denied
+PASS 04-ssr-state-exposure/vulnerable: inherited-property token denied
+PASS 04-ssr-state-exposure/vulnerable: live status revocation
+PASS 04-ssr-state-exposure/fixed: active control retrieves protected fixture
+PASS 04-ssr-state-exposure/fixed: disabled session resource boundary
+PASS 04-ssr-state-exposure/fixed: missing session denied
+PASS 04-ssr-state-exposure/fixed: inherited-property token denied
+PASS 04-ssr-state-exposure/fixed: live status revocation
+PASS Changing entire response can still redraw a fixed client; no UI integrity claim
+PASS IDOR/vulnerable: second owner positive control
+PASS IDOR/vulnerable: inherited key is not a profile
+PASS IDOR/vulnerable: unknown record
+PASS IDOR/vulnerable: anonymous denied
+PASS IDOR/fixed: second owner positive control
+PASS IDOR/fixed: inherited key is not a profile
+PASS IDOR/fixed: unknown record
+PASS IDOR/fixed: anonymous denied
+PASS login-error: empty-state probe inconclusive
+PASS login-error: role probe inconclusive
+PASS server-error: empty-state probe inconclusive
+PASS server-error: role probe inconclusive
+PASS malformed-json: empty-state probe inconclusive
+PASS malformed-json: role probe inconclusive
+PASS different-empty: empty-state probe inconclusive
+PASS different-empty: role probe inconclusive
+PASS login-redirect: empty-state probe inconclusive
+PASS login-redirect: role probe inconclusive
+BOUNDARY_CHECKS 39 passed

@@ -1,13 +1,4 @@
-// A faithful, minimal model of the vulnerable client's decision logic, as
-// observed in the field: the client has no explicit authorization signal to
-// read, so it decides what to render purely from whether the projects list
-// came back non-empty.
-//
-//   non-empty list -> mount the dashboard
-//   empty list     -> render the "account disabled" screen
-//
-// This is the exact logic that makes response injection work: the client is
-// the only thing deciding, and it decides on data presence alone.
+// Pure rendering models. A changed screen is not a server authorization receipt.
 function renderDecision(httpStatus, body) {
   // The vulnerable client ignores status nuance and keys off the payload.
   const projects = (body && body.projects) || [];

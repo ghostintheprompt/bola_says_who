@@ -18,7 +18,7 @@ function createApp() {
   });
 
   app.get('/api/profile/:profileId', requireAuth(state), (req, res) => {
-    const profile = state.profiles[req.params.profileId];
+    const profile = Object.hasOwn(state.profiles, req.params.profileId) ? state.profiles[req.params.profileId] : null;
     if (!profile) return res.status(404).json({ error: 'not found' });
     if (profile.ownerId !== req.userId) {
       return res.status(403).json({ error: 'forbidden' });

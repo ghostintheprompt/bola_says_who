@@ -1,14 +1,4 @@
-// Two client hydration models.
-//
-// hydrateFromFlag (vulnerable client): reads the initial-state <script> blob
-// the server embedded and decides what to mount from the isActive flag inside
-// it. The decision lives in a value shipped to — and therefore editable by —
-// the browser. This is what makes state injection work.
-//
-// hydrateFromServerView (fixed client): mounts whatever authoritative view the
-// server actually rendered into #root, with no client-side authorization flag
-// to read or flip.
-
+// Pure hydration models, not a browser runtime or an authorization control.
 function readStateBlob(html) {
   const m = html.match(/<script id="__APP_STATE__" type="application\/json">([\s\S]*?)<\/script>/);
   if (!m) return null;

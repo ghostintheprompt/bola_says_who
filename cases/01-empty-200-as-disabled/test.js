@@ -19,12 +19,13 @@ const { renderDecision, renderDecisionExplicit } = require('./frontend');
 
 async function withServer(createApp, fn) {
   const { app } = createApp();
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
     await fn(base);
   } finally {
-    server.close();
+    await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
   }
 }
 
@@ -95,8 +96,8 @@ async function run() {
       disabled.body.projects === undefined,
       `got ${disabled.status} ${JSON.stringify(disabled.body)}`);
 
-    // The same injection attempt is now inert: the client keys off the 403 code,
-    // so stuffing projects into the body does not change the decision.
+    // Body-only injection while retaining the 403: this rendering control stays
+    // disabled. Rewriting status too redraws it; see tests/boundaries.js.
     const injected = { status: 403, body: { code: 'ACCOUNT_DISABLED', projects: [{ id: 'x' }] } };
     report('fixed: injected projects on a 403 do not unlock the dashboard',
       renderDecisionExplicit(injected.status, injected.body) === 'ACCOUNT_DISABLED',
@@ -107,4 +108,4 @@ async function run() {
   if (failed > 0) process.exit(1);
 }
 
-run();
+run().catch(error => { console.error(error); process.exitCode = 1; });

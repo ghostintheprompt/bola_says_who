@@ -1,24 +1,15 @@
-// Case 04 verification, run against both servers.
-//
-// Proves two linked defects and their fix:
-//   A. Exposure (CWE-200) — does a disabled account's page carry the
-//      authorization flag, its profileId, and the protected scene name in
-//      plaintext the client receives?
-//   B. Injection consequence — if so, does editing that flag in transit flip
-//      the hydrated view to the dashboard? (modeled by a string edit on the
-//      HTML the test holds; nothing is sent to any real system.)
-// The fix is proven to close both: no sensitive state is shipped for a
-// disabled account, so there is nothing to read and nothing to flip.
-
+// Paired metadata and local-hydration observations. Protected-resource
+// enforcement and revocation are exercised separately in tests/boundaries.js.
 const { createApp: createVulnerable } = require('./vulnerable/server');
 const { createApp: createFixed } = require('./fixed/server');
 const { hydrateFromFlag, hydrateFromServerView } = require('./client');
 
 async function withServer(createApp, fn) {
   const { app } = createApp();
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  try { await fn(base); } finally { server.close(); }
+  try { await fn(base); } finally { await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve())); }
 }
 
 async function login(base, u, p) {
@@ -52,7 +43,7 @@ async function run() {
     const exposed = disabledHtml.includes('"isActive"') &&
       disabledHtml.includes('prof_disabled_1077') &&
       disabledHtml.includes('FellowProjectsScene');
-    report('vulnerability (CWE-200): disabled page exposes isActive flag, profileId, and protected scene',
+    report('observation: disabled page includes its own state and scene metadata',
       exposed, 'expected all three plaintext tokens in the HTML');
 
     const baseline = hydrateFromFlag(disabledHtml);
@@ -74,11 +65,11 @@ async function run() {
     const noExposure = !disabledHtml.includes('isActive') &&
       !disabledHtml.includes('prof_disabled_1077') &&
       !disabledHtml.includes('FellowProjectsScene');
-    report('fixed (CWE-200 closed): disabled page ships no flag, no profileId, no protected scene',
+    report('metadata minimization: disabled page omits state and scene identifiers',
       noExposure, 'expected none of the sensitive tokens in the HTML');
 
-    // The same injection attempt: there is no flag to flip, and the server
-    // rendered the authoritative view, so the hydrated result stays disabled.
+    // This particular flag replacement finds no match in the fixed page.
+    // Arbitrary rewriting can still redraw a local screen; it grants no backend access.
     const injectedHtml = disabledHtml.replace('"isActive":false', '"isActive":true');
     report('fixed: injection attempt is inert, view stays ACCOUNT_DISABLED',
       hydrateFromServerView(injectedHtml) === 'ACCOUNT_DISABLED',
@@ -89,4 +80,4 @@ async function run() {
   if (failed > 0) process.exit(1);
 }
 
-run();
+run().catch(error => { console.error(error); process.exitCode = 1; });

@@ -41,9 +41,10 @@ function shuffle(arr) {
 
 async function withServer(createApp, fn) {
   const { app } = createApp();
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  try { return await fn(base); } finally { server.close(); }
+  try { return await fn(base); } finally { await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve())); }
 }
 
 let total = 0;
@@ -90,4 +91,4 @@ async function run() {
   assert.strictEqual(total, ROUNDS * 4);
 }
 
-run();
+run().catch(error => { console.error(error); process.exitCode = 1; });

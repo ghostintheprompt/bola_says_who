@@ -1,9 +1,6 @@
-// FIXED: the server makes the decision and renders the authoritative view for
-// it. A disabled account receives a page whose #root already contains the
-// account-disabled view, with no isActive flag, no profileId, and no reference
-// to the protected scene — nothing sensitive to read and nothing to flip. An
-// active account receives the dashboard view. The client hydrates the view the
-// server rendered rather than recomputing access from a shipped flag.
+// Server-rendered account state minimizes unnecessary client metadata. The
+// protected-resource route independently enforces current account status.
+// Rendering alone cannot prevent an owner from editing their local screen.
 
 const express = require('express');
 const { freshState, login, requireAuth } = require('../seed');
@@ -39,6 +36,13 @@ function createApp() {
 
   app.get('/app', requireAuth(state), (req, res) => {
     res.type('html').send(req.user.status === 'active' ? dashboardPage() : disabledPage());
+  });
+
+
+  // Synthetic protected resource: UI edits confer no authority here.
+  app.get('/api/restricted-brief', requireAuth(state), (req, res) => {
+    if (req.user.status !== 'active') return res.status(403).json({ code: 'ACCOUNT_DISABLED' });
+    res.json({ brief: 'FIXTURE-RESTRICTED-BRIEF', owner: req.user.id });
   });
 
   return { app, state };

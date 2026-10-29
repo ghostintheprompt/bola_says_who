@@ -1,9 +1,6 @@
-// FIXED: the server makes the authorization decision and says so explicitly.
-// A disabled account gets 403 with a machine-readable code; the projects
-// payload is never served for it at all. An enabled account with no projects
-// gets a normal 200 { projects: [] } — now unambiguously different from a
-// lockout. The client no longer has to guess from data presence, so there is
-// no empty-vs-disabled ambiguity left for an injected payload to exploit.
+// Account status is checked server-side on both project and protected-resource
+// routes. The client receives an explicit disabled result; an active empty
+// account remains usable. UI response rewriting cannot grant server authority.
 
 const express = require('express');
 const { freshState, login, requireAuth } = require('../seed');
@@ -25,6 +22,13 @@ function createApp() {
       return res.status(403).json({ error: 'account disabled', code: 'ACCOUNT_DISABLED' });
     }
     res.status(200).json({ projects: state.projects[req.userId] || [] });
+  });
+
+
+  // Synthetic protected resource: UI edits confer no authority here.
+  app.get('/api/restricted-brief', requireAuth(state), (req, res) => {
+    if (req.user.status !== 'active') return res.status(403).json({ code: 'ACCOUNT_DISABLED' });
+    res.json({ brief: 'FIXTURE-RESTRICTED-BRIEF', owner: req.user.id });
   });
 
   return { app, state };

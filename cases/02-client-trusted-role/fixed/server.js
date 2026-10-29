@@ -1,7 +1,7 @@
 // FIXED: the endpoint derives the role from the authenticated session's own
 // server-side record and ignores any client-asserted role entirely. A
 // student session asking for the fellow dashboard — with or without an
-// x-role: fellow header — is refused.
+// x-role: fellow header — receives only its student response.
 
 const express = require('express');
 const { freshState, login, requireAuth } = require('../seed');

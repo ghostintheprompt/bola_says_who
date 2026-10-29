@@ -14,9 +14,10 @@ const { createApp: createFixed } = require('./fixed/server');
 
 async function withServer(createApp, fn) {
   const { app } = createApp();
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  try { await fn(base); } finally { server.close(); }
+  try { await fn(base); } finally { await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve())); }
 }
 
 async function login(base, username, password) {
@@ -80,4 +81,4 @@ async function run() {
   if (failed > 0) process.exit(1);
 }
 
-run();
+run().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,133 +1,84 @@
-# data_driven_authz_lab
+# Data-Driven Authorization Lab
 
-A reproducible lab for authorization-bypass classes that live in the gap
-between what a server *knows* and what it *tells the client* — built the same
-way as [`cve_lab`](../cve_lab) and [`transit_fare_lab`](../transit_fare_lab):
-one case per directory, a vulnerable and a fixed build of the same server
-differing by exactly the control under test, and a two-part verification
-(functionality + vulnerability) run against both, not described.
+The dashboard says no. The endpoint still needs to mean it.
 
-## Why this exists
+Five cases, four paired Express backends, synthetic accounts, real HTTP requests. The lab separates a client rendering change from a protected-resource read, then reruns the same requests against the fixed server. No external platform or account data is included.
 
-A modern single-page app decides what to render from whatever the server
-returns — in an API response or in the initial state shipped with the HTML.
-When the server encodes an authorization outcome as the presence of data, an
-empty `200`, a plaintext flag, or a caller-supplied role, the decision
-effectively moves into the browser — the one surface an attacker fully
-controls. Each case below models one such failure, proves it is exploitable
-against a backend built for the question, and proves a specific fix closes it.
+## Run
 
-## Method
+Node.js 22 or newer:
 
-Each case is a **matched pair**: the `vulnerable/` and `fixed/` servers are
-identical except for the single authorization check under test, so the diff
-*is* the finding — no confounding rewrite. Every exploit demonstration is a
-non-destructive probe that proves a boundary holds or does not; no weaponized
-payload is ever sent to anything but this lab's own seeded fixtures. Every
-claim is run before it is written down.
-
-Case 03 adds a **blind detector**: the real vulnerable and fixed servers are
-shuffled into unlabeled slots across randomized rounds, and a target-agnostic
-probe — given only a URL and the operator's own fixture credentials, never the
-ground-truth label — must classify each correctly from observed behavior alone.
-This separates a genuine detector from a label-reader.
-
-## Cases
-
-- [`01-empty-200-as-disabled`](./cases/01-empty-200-as-disabled/) — a disabled
-  account is served `200 { projects: [] }`, byte-identical to an active account
-  with no projects; the client infers "disabled" from the empty list, so an
-  injected non-empty payload flips it to the dashboard. Fix: explicit
-  `403 { code: "ACCOUNT_DISABLED" }`, payload withheld. **7/7.**
-- [`02-client-trusted-role`](./cases/02-client-trusted-role/) — the dashboard
-  endpoint routes on a client-asserted role header (a mutable, non-`HttpOnly`
-  role cookie's stand-in); a student asserting the fellow role gets the fellow
-  dashboard. Fix: role derived from the session's server-side record. **5/5.**
-- [`03-blind-probe`](./cases/03-blind-probe/) — target-agnostic detectors for
-  cases 01 and 02, scored against the shuffled real servers with labels
-  withheld. **32/32 correct across 8 randomized rounds.**
-- [`04-ssr-state-exposure`](./cases/04-ssr-state-exposure/) — the server-
-  rendered page embeds the authorization flag (`isActive`), the account's
-  `profileId`, and the protected scene name in a plaintext initial-state blob
-  the client hydrates from. Two defects in one response: sensitive state is
-  exposed (CWE-200), and editing the flag in transit flips a disabled account
-  to the dashboard. Fix: the server renders the authoritative view and ships no
-  flag, no identifier, and no protected markup to a disabled account. **6/6.**
-- [`05-idor-cross-user`](./cases/05-idor-cross-user/) — `GET /api/profile/:id`
-  checks authentication but not ownership, so any logged-in worker reads
-  another worker's contact details and earnings by supplying their `profileId`
-  (the same identifier exposed in case 04). Fix: confirm the session owns the
-  `profileId` before returning it. **4/4.**
-
-## Framework mapping
-
-Mapped only where the behavior actually fits; loose taxonomy is worse than
-none.
-
-| Case | CWE | OWASP |
-|------|-----|-------|
-| 01 | CWE-602 (Client-Side Enforcement of Server-Side Security), CWE-807 (Reliance on Untrusted Inputs in a Security Decision), CWE-285 (Improper Authorization), CWE-754 (Improper Check for Exceptional Conditions) | Top 10 2021 A01: Broken Access Control; API Security Top 10 2023 API1: Broken Object Level Authorization |
-| 02 | CWE-284 (Improper Access Control), CWE-639 (Authorization Bypass Through User-Controlled Key) | Top 10 2021 A01; API Security Top 10 2023 API5: Broken Function Level Authorization |
-| 04 | CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor), CWE-602, CWE-807 | Top 10 2021 A01; A05: Security Misconfiguration |
-| 05 | CWE-639, CWE-284 | Top 10 2021 A01; API Security Top 10 2023 API1: Broken Object Level Authorization |
-
-NIST SP 800-53 control objective across all cases: AC-3 (Access Enforcement) —
-the enforcement point must be the server, not a client-side inference.
-
-**Deliberately not mapped:** MITRE ATT&CK and ATLAS. These are web-application
-authorization defects reproduced in a controlled lab, not observed adversary
-TTP sequences (ATT&CK) and not attacks on an ML model or its supply chain
-(ATLAS). Forcing either mapping would misrepresent the evidence.
-
-## Evidence, assumptions, and confidence
-
-- **Lab result (high confidence, directly observed and reproducible):** every
-  vulnerable build is exploitable and every fixed build defeats the identical
-  probe. Verified by `npm test` and in-container, 7/7 + 5/5 + 32/32 + 6/6 +
-  4/4, same output either way.
-- **Theoretical result (high confidence, deductive):** these classes are
-  vulnerabilities wherever they exist — an authorization outcome carried by
-  attacker-controllable input (an empty body, a plaintext flag, a supplied
-  role or object ID) is not a control. The lab demonstrates this; it does not
-  depend on the lab for its truth.
-- **Field provenance (reported, not independently verified here):** the classes
-  were modeled from behavior observed on a real contractor-platform account-
-  state screen. The live target is **not named, probed, or touched** by this
-  lab. Whether that platform currently exhibits these behaviors is a separate
-  claim this lab does **not** establish; confirming it would require authorized
-  testing against that system and is out of scope here.
-- **Scope discipline:** case 05 answers, against this lab's own fixtures, the
-  cross-user pivot the source notes only *proposed* trying. It is proven here
-  precisely because it is **not** run against any real account — the controlled
-  backend is what makes confirming the boundary legitimate.
-
-## Running it
-
-Directly:
-
-```bash
-npm install
+```sh
+npm ci
 npm test
 ```
 
-Containerized:
+Or run the same suite in a container:
 
-```bash
+```sh
 docker compose build
 docker compose run --rm lab
 ```
 
-Both run identically — confirmed, same 7/7 + 5/5 + 32/32 + 6/6 + 4/4 output
-either way. Each `test.js` spins up both servers on an ephemeral local port,
-logs in with real fixture credentials, runs the checks, and prints pass/fail
-per check — non-destructively, against fixture data this lab owns and seeds
-itself. Nothing here talks to any real platform.
+Tests start ephemeral servers bound to `127.0.0.1`, await startup and shutdown, and seed a fresh in-memory state per server. There is no persistent service, exposed container port, external target configuration, or live-platform scan. Login issues random session tokens. The fixture credentials in the source are test data, not production secrets. This is a research fixture rather than a production identity provider.
 
-## Queued next, not started
+## Cases and actual boundaries
 
-- A signed-claim fix variant: the client reads an `is_active` claim from a
-  signed session token it cannot forge, instead of inferring state from the
-  response body or a shipped flag at all.
-- Extending the case 03 blind detector to cover cases 04 and 05.
-- A session-replay case: whether a fare-style deduction or a state-changing
-  mutation can be replayed or reordered.
+| Case | Vulnerable behavior | Fixed behavior | Evidence |
+| --- | --- | --- | --- |
+| [01: Empty 200](cases/01-empty-200-as-disabled/) | Active-empty and disabled sessions get the same projects response. A separate restricted-brief endpoint omits status enforcement. | Projects explicitly deny a disabled session; the resource endpoint also checks current status. | Seven original checks plus protected-resource and revocation controls. |
+| [02: Client-trusted role](cases/02-client-trusted-role/) | A student session asserting `x-role: fellow` receives the seeded fellow payout data. | The endpoint reads the role from the server-side session record and returns only student data. | Five paired checks. |
+| [03: Blind fixture classification](cases/03-blind-probe/) | Probes inspect the behavior of unlabeled servers from cases 01 and 02. | `SOUND` requires the expected positive control and precise denial behavior. Missing evidence returns `INCONCLUSIVE`. | 32 correct classifications over eight shuffled rounds, plus ten inconclusive-response checks. |
+| [04: Server-rendered state](cases/04-ssr-state-exposure/) | Editing a shipped flag redraws the local dashboard. A separate resource endpoint omits the account-status check. | Server rendering minimizes metadata; the resource endpoint independently enforces status. | Six original checks plus protected-resource and revocation controls. |
+| [05: Cross-user profile](cases/05-idor-cross-user/) | Alice's valid session retrieves Bob's seeded email and earnings by supplying his profile ID. | The same request receives 403 because the session does not own the profile. | Four original checks plus second-owner, unknown-record, anonymous, and inherited-key controls. |
+
+The current direct suite logs **93 successful checks**: 22 original paired assertions, 32 repeated classifications, and 39 added boundary/control assertions. These are logged checks, not 93 independent vulnerabilities or 93 unique attack paths. `tests/boundaries.js` exercises the additional controls. See [AUDIT.md](AUDIT.md) for the evidence and remaining limits.
+
+## Red: change the request, observe the resource
+
+Case 02 changes one client-asserted role header while retaining the same authenticated student session. The relevant difference is which server-side role source the endpoint uses:
+
+```js
+// Vulnerable handler: the caller can select a higher role.
+const role = clientAssertedRole(req) || req.sessionUser.role;
+```
+
+```js
+// Fixed handler: the authenticated session supplies the role.
+const role = req.sessionUser.role;
+```
+
+Case 05 keeps Alice's session and changes only the requested object ID. The response must demonstrate the cross-user data read. A visible profile ID, a public scene name, or a changed local DOM does not establish that result.
+
+## Blue: enforce each protected request
+
+The restricted-brief route in cases 01 and 04 checks current account status before returning data:
+
+```js
+app.get('/api/restricted-brief', requireAuth(state), (req, res) => {
+  if (req.user.status !== 'active') return res.status(403).json({ code: 'ACCOUNT_DISABLED' });
+  res.json({ brief: 'FIXTURE-RESTRICTED-BRIEF', owner: req.user.id });
+});
+```
+
+The profile route in case 05 verifies ownership before serializing the record. Tests retain the valid owner request, check the other owner, reject unauthenticated calls, and revoke an already authenticated account in the status cases. A fix that denies everybody fails the positive control.
+
+A browser owner can rewrite an entire response, including its HTTP status, or change any local HTML. The fixed client can still be made to display a dashboard. That does not change the session or unlock a protected backend. The lab explicitly tests this distinction rather than claiming a 403 makes the interface tamper-proof.
+
+## Classification limits
+
+The probes have no ground-truth label input. The harness knows which paired server it started, shuffles the four targets, and compares the returned verdict afterward. Repeated rounds exercise ordering; they do not measure real-world accuracy, independence, or a broad scan population. Results apply to the expected fixture contracts.
+
+Failed login, redirect, malformed JSON, server error, or an unexpected response shape produces `INCONCLUSIVE`. A missing proof of exploitation is not proof of sound authorization.
+
+Cases 01 and 04 retain their UI demonstrations, but the protected-resource routes were added during audit to make the server-side consequence directly testable. This is an explicit synthetic extension, not a reconstruction of an external service's internal implementation. Case 04's rendering fix changes more than one presentation detail; there is no blanket single-line-diff claim.
+
+## Taxonomy
+
+Cases 01 and 04 model missing account-status enforcement at the resource endpoint: [CWE-862](https://cwe.mitre.org/data/definitions/862.html). Case 02 models an incorrect role decision: [CWE-863](https://cwe.mitre.org/data/definitions/863.html), with [OWASP API5:2023](https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/) as the function-level reference. Case 05 models missing object ownership enforcement: CWE-862 and [OWASP API1:2023](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/).
+
+[CWE-602](https://cwe.mitre.org/data/definitions/602.html) describes relying on the client to enforce server protections. It is useful context for the client-only design. An account's own state and a scene name are not automatically a sensitive information exposure. No CVE assignment, severity score, external finding validation, ATT&CK sequence, or ML-specific ATLAS technique is claimed.
+
+## Next builds
+
+Extend blind classification to cases 04 and 05. Add a signed-claim variant with explicit revocation behavior. Add state-changing operations and replay controls. Those are separate experiments, not capabilities already present here.
