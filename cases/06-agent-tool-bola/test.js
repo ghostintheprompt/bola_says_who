@@ -1,6 +1,6 @@
 // Case 06 verification, run against both servers.
 //   1. Functionality — the agent reads its own payouts through the tool.
-//   2. Vulnerability — a steered fellowId (a prompt-injected tool argument) reads
+//   2. Vulnerability — a steered accountId (a prompt-injected tool argument) reads
 //      another account on the vulnerable server.
 //   3. Permission + monitor — the fixed server denies the over-ceiling argument
 //      with 403 and records the attempt instead of swallowing it.
@@ -26,11 +26,11 @@ async function login(base, u, p) {
   return (await res.json()).token;
 }
 
-async function callTool(base, token, fellowId) {
+async function callTool(base, token, accountId) {
   const res = await fetch(`${base}/tool/get-payments`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-    body: JSON.stringify({ fellowId }),
+    body: JSON.stringify({ accountId }),
   });
   return { status: res.status, body: await res.json().catch(() => ({})) };
 }
@@ -46,11 +46,11 @@ async function run() {
   await withServer(createVulnerable, async (base) => {
     const alice = await login(base, 'alice', 'pw-alice-1');
 
-    const own = await callTool(base, alice, 'fellow_alice_8842');
+    const own = await callTool(base, alice, 'account_alice_8842');
     report('functionality: agent reads its own payouts', own.status === 200 && own.body.unpaidEarnings === 1200, JSON.stringify(own));
 
-    const injected = await callTool(base, alice, 'fellow_bob_1077');
-    report("vulnerability: a steered fellowId reads another account's payouts",
+    const injected = await callTool(base, alice, 'account_bob_1077');
+    report("vulnerability: a steered accountId reads another account's payouts",
       injected.status === 200 && injected.body.email === 'bob@example.test' && injected.body.unpaidEarnings === 9800,
       JSON.stringify(injected));
   });
@@ -59,14 +59,14 @@ async function run() {
   await withServer(createFixed, async (base, state) => {
     const alice = await login(base, 'alice', 'pw-alice-1');
 
-    const own = await callTool(base, alice, 'fellow_alice_8842');
+    const own = await callTool(base, alice, 'account_alice_8842');
     report('functionality: agent still reads its own payouts', own.status === 200 && own.body.unpaidEarnings === 1200, JSON.stringify(own));
 
-    const injected = await callTool(base, alice, 'fellow_bob_1077');
+    const injected = await callTool(base, alice, 'account_bob_1077');
     report('permission: the over-ceiling tool argument is denied', injected.status === 403 && injected.body.code === 'OWNERSHIP', JSON.stringify(injected));
 
     report('monitor: the denied attempt is recorded, not swallowed',
-      state.escalations.length === 1 && state.escalations[0].requested === 'fellow_bob_1077',
+      state.escalations.length === 1 && state.escalations[0].requested === 'account_bob_1077',
       JSON.stringify(state.escalations));
   });
 

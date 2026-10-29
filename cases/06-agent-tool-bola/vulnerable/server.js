@@ -1,4 +1,4 @@
-// VULNERABLE: the agent tool trusts the fellowId in the tool call. Whatever id
+// VULNERABLE: the agent tool trusts the accountId in the tool call. Whatever id
 // the model was handed, including one slipped in by prompt injection, is served,
 // because the tool confirms the caller is authenticated but never that the acting
 // session owns the id. The agent's capability to name an id becomes permission to
@@ -19,13 +19,13 @@ function createApp() {
     res.json({ token });
   });
 
-  // Tool surface the agent calls. The body carries the fellowId the model chose.
+  // Tool surface the agent calls. The body carries the accountId the model chose.
   app.post('/tool/get-payments', requireAuth(state), (req, res) => {
-    const requested = (req.body || {}).fellowId;
+    const requested = (req.body || {}).accountId;
     const record = Object.hasOwn(state.payouts, requested) ? state.payouts[requested] : null;
     if (!record) return res.status(404).json({ error: 'not found' });
     // BUG: no check that record.ownerId === req.userId
-    res.json({ fellowId: requested, email: record.email, unpaidEarnings: record.unpaidEarnings });
+    res.json({ accountId: requested, email: record.email, unpaidEarnings: record.unpaidEarnings });
   });
 
   return { app, state };
