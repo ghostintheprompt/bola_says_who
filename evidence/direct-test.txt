@@ -22,14 +22,14 @@
   PASS  fixed: student asserting x-role=fellow is kept on the student dashboard
 
 5 passed, 0 failed
-  round 1: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
-  round 2: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND
-  round 3: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
-  round 4: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE
-  round 5: empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/fixed->SOUND
-  round 6: client-role/fixed->SOUND, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE
-  round 7: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE
-  round 8: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
+  round 1: empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND, client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE
+  round 2: client-role/fixed->SOUND, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE
+  round 3: client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE
+  round 4: client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND
+  round 5: client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND, empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE
+  round 6: client-role/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, empty-state/fixed->SOUND
+  round 7: client-role/fixed->SOUND, client-role/vulnerable->VULNERABLE, empty-state/vulnerable->VULNERABLE, empty-state/fixed->SOUND
+  round 8: empty-state/fixed->SOUND, empty-state/vulnerable->VULNERABLE, client-role/vulnerable->VULNERABLE, client-role/fixed->SOUND
 
   blind classification: 32/32 correct across 8 randomized rounds
   PASS  probe classifies every shuffled target correctly, label withheld
@@ -90,4 +90,6 @@ PASS different-empty: empty-state probe inconclusive
 PASS different-empty: role probe inconclusive
 PASS login-redirect: empty-state probe inconclusive
 PASS login-redirect: role probe inconclusive
-BOUNDARY_CHECKS 39 passed
+PASS all-roles-student: missing elevated positive control is inconclusive
+PASS all-roles-denied: missing elevated positive control is inconclusive
+BOUNDARY_CHECKS 41 passed

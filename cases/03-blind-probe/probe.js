@@ -7,6 +7,7 @@ async function request(base, path, options = {}) {
   } catch (error) { return { error: error.name }; }
 }
 async function login(base, credentials) {
+  if (!credentials || typeof credentials.u !== 'string' || typeof credentials.p !== 'string') return null;
   const result = await request(base, '/login', {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({username:credentials.u,password:credentials.p})});
   return result.status === 200 && typeof result.body?.token === 'string' && result.body.token ? result.body.token : null;
 }
@@ -26,14 +27,16 @@ async function probeEmptyStateAuthz(base, creds) {
 }
 async function probeClientTrustedRole(base, creds) {
   const token = await login(base, creds.lowPriv);
-  if (!token) return {verdict:'INCONCLUSIVE',evidence:{reason:'fixture login failed'}};
+  const elevatedToken = await login(base, creds.highPriv);
+  if (!token || !elevatedToken) return {verdict:'INCONCLUSIVE',evidence:{reason:'fixture login failed'}};
+  const control=await request(base,'/api/dashboard',{headers:auth(elevatedToken)});
   const baseline=await request(base,'/api/dashboard',{headers:auth(token)});
   const escalated=await request(base,'/api/dashboard',{headers:{...auth(token),'x-role':creds.elevatedRole}});
   let verdict='INCONCLUSIVE';
-  if (baseline.status === 200 && baseline.body?.role === 'student' && Array.isArray(baseline.body.payouts) && baseline.body.payouts.length === 0) {
+  if (control.status === 200 && control.body?.role === creds.elevatedRole && Array.isArray(control.body.payouts) && control.body.payouts.length > 0 && baseline.status === 200 && baseline.body?.role === 'student' && Array.isArray(baseline.body.payouts) && baseline.body.payouts.length === 0) {
     if (escalated.status === 200 && escalated.body?.role === creds.elevatedRole && Array.isArray(escalated.body.payouts) && escalated.body.payouts.length > 0) verdict='VULNERABLE';
     if (escalated.status === 200 && escalated.body?.role === 'student' && Array.isArray(escalated.body.payouts) && escalated.body.payouts.length === 0) verdict='SOUND';
   }
-  return {verdict,evidence:{baseline,escalated}};
+  return {verdict,evidence:{baseline,escalated,control}};
 }
 module.exports={probeEmptyStateAuthz,probeClientTrustedRole};

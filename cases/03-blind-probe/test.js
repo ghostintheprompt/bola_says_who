@@ -1,16 +1,5 @@
-// Case 03 verification: prove the detectors are genuine, not label-readers.
-//
-// The real vulnerable and fixed servers from cases 01 and 02 are shuffled into
-// unlabeled slots across many randomized rounds. The probe is handed only a
-// base URL and the operator's own fixture credentials — never the ground-truth
-// label. After it returns a verdict, the harness compares that verdict to the
-// truth it withheld. A probe that merely echoed a label, or guessed, cannot
-// score 100% across a randomized shuffle; a probe whose verdict is actually
-// derived from observed server behavior will.
-//
-// Confidence framing: each classification is a deterministic, reproducible
-// observation (high confidence, directly observed). The harness asserts the
-// observed verdict equals ground truth for every target in every round.
+// Shuffle four known fixture types; probes receive credentials but no labels.
+// Repeated classifications measure these contracts, not general accuracy.
 
 const assert = require('node:assert');
 const { createApp: vuln01 } = require('../01-empty-200-as-disabled/vulnerable/server');
@@ -25,6 +14,7 @@ const EMPTY_STATE_CREDS = {
 };
 const ROLE_CREDS = {
   lowPriv: { u: 'student', p: 'pw-stu-1' },
+  highPriv: { u: 'fellow', p: 'pw-fel-1' },
   elevatedRole: 'fellow',
 };
 

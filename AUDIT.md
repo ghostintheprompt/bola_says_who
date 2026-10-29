@@ -6,7 +6,7 @@ The initial suite passed its own assertions. Cases 01 and 04 established renderi
 
 The original case 01 injected response changed status to 200, while its fixed comparison retained 403. Those were not identical interventions. The new boundary suite explicitly demonstrates that rewriting the entire response redraws the fixed client too. Backend resource denial, rather than interface integrity, carries the fix claim.
 
-The original probes returned SOUND for broad unrecognized behavior. They now require exact positive controls and expected output, record supporting responses, reject redirects, bound transport time, and return INCONCLUSIVE for login failures, malformed JSON, server errors, or unexpected shapes. Ten negative controls exercise these branches. The 32 shuffled classifications cover the same four paired fixtures, not 32 independent targets.
+The original probes returned SOUND for broad unrecognized behavior. They now require exact positive controls and expected output, record supporting responses, reject redirects, bound transport time, and return INCONCLUSIVE for login failures, malformed JSON, server errors, or unexpected shapes. Twelve negative controls exercise these branches. The 32 shuffled classifications cover the same four paired fixtures, not 32 independent targets.
 
 Session stores now use null-prototype objects, fixture usernames require own keys, and profile lookups reject inherited properties. These supporting changes apply to both vulnerable and fixed sides so an accidental prototype lookup cannot confound the intended defect. Tests cover forged inherited-key session tokens and profile IDs.
 
@@ -14,7 +14,7 @@ Test servers bind only loopback and await startup/teardown. Docker uses npm ci a
 
 ## Verification
 
-Direct npm test: 93 successful logged checks, no failures. Breakdown: 7+5+32+6+4 original checks/classifications, plus39 boundary assertions. Docker Compose build and container run also passed the same93checks. npm audit reported zero known advisories at audit time; this is advisory coverage, not a security guarantee. Evidence logs are in evidence/. No external platform was contacted, and no live-site or assigned CVE claim is made.
+Direct npm test: 95 successful logged checks, no failures. Breakdown: 7+5+32+6+4 original checks/classifications, plus41 boundary assertions. Docker Compose build and container run also passed the same95checks. npm audit reported zero known advisories at audit time; this is advisory coverage, not a security guarantee. Evidence logs are in evidence/. No external platform was contacted, and no live-site or assigned CVE claim is made.
 
 ## Technical retention
 

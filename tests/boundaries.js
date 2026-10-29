@@ -46,12 +46,18 @@ async function run() {
   check(`IDOR/${variant}: anonymous denied`,()=>assert.equal(noauth.status,401));
  });
  const creds={activeEmpty:{u:'active_empty',p:'pw-empty-1'},disabled:{u:'disabled',p:'pw-dis-1'}};
- const roleCreds={lowPriv:{u:'student',p:'pw-stu-1'},elevatedRole:'fellow'};
+ const roleCreds={lowPriv:{u:'student',p:'pw-stu-1'},highPriv:{u:'fellow',p:'pw-fel-1'},elevatedRole:'fellow'};
  for(const kind of ['login-error','server-error','malformed-json','different-empty','login-redirect']) {
   await withServer(()=>{const app=express();app.use(express.json());app.post('/login',(req,res)=>kind==='login-error'?res.status(401).json({}):kind==='login-redirect'?res.redirect('/elsewhere'):res.json({token:req.body.username}));app.use((req,res)=>{if(kind==='malformed-json')return res.type('json').send('{');if(kind==='different-empty')return res.json({projects:[],unrelated:true});res.status(503).json({error:'unavailable'})});return{app}},async base=>{
    const empty=await probeEmptyStateAuthz(base,creds),role=await probeClientTrustedRole(base,roleCreds);
    check(`${kind}: empty-state probe inconclusive`,()=>assert.equal(empty.verdict,'INCONCLUSIVE'));
    check(`${kind}: role probe inconclusive`,()=>assert.equal(role.verdict,'INCONCLUSIVE'));
+  });
+ }
+ for (const kind of ['all-roles-student','all-roles-denied']) {
+  await withServer(()=>{const app=express();app.use(express.json());app.post('/login',(req,res)=>res.json({token:req.body.username}));app.get('/api/dashboard',(req,res)=>kind==='all-roles-student'?res.json({role:'student',payouts:[]}):res.status(403).json({error:'forbidden'}));return{app}},async base=>{
+   const result=await probeClientTrustedRole(base,roleCreds);
+   check(`${kind}: missing elevated positive control is inconclusive`,()=>assert.equal(result.verdict,'INCONCLUSIVE'));
   });
  }
  console.log(`BOUNDARY_CHECKS ${checks} passed`);
