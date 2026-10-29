@@ -7,8 +7,8 @@ const crypto = require('crypto');
 
 function freshState() {
   // Three accounts chosen to expose the ambiguity:
-  //   active_full  — an enabled contractor with projects
-  //   active_empty — an enabled contractor who simply has no projects yet
+  //   active_full  — an enabled worker with projects
+  //   active_empty — an enabled worker who simply has no projects yet
   //   disabled     — a flagged/deactivated account
   // The whole bug lives in telling active_empty and disabled apart.
   const users = {
