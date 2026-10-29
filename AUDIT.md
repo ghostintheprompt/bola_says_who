@@ -14,7 +14,7 @@ Test servers bind only loopback and await startup/teardown. Docker uses npm ci a
 
 ## Verification
 
-Direct npm test: 95 successful logged checks, no failures. Breakdown: 7+5+32+6+4 original checks/classifications, plus41 boundary assertions. Docker Compose build and container run also passed the same95checks. npm audit reported zero known advisories at audit time; this is advisory coverage, not a security guarantee. Evidence logs are in evidence/. No external platform was contacted, and no live-site or assigned CVE claim is made.
+Direct npm test: 100 successful logged checks, no failures. Breakdown: 7+5+32+6+4+5 original checks/classifications, plus 41 boundary assertions. Docker Compose runs the same `npm ci && npm test` suite. npm audit reported zero known advisories at audit time; this is advisory coverage, not a security guarantee. Evidence logs are in evidence/. No external platform was contacted, and no live-site or assigned CVE claim is made.
 
 ## Technical retention
 
